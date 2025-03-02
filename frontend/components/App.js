@@ -1,56 +1,57 @@
-import React from 'react';
-import axios from 'axios';
-import TodoList from './TodoList';
-import Form from './Form';
+
+
+
+
+import React from "react";
+import axios from "axios";
+
+const URL = "http://localhost:9000/api/todos"
 
 export default class App extends React.Component {
-  constructor() {
-    super();
-    this.state = {
-      todos: []
-    };
-  }
+  
+   state = {
+       todos: [],
+       error: '',
+       toDoNameInput: ''
+   }
 
-  //// Fetch todos after the component mounts
-  componentDidMount(){
-    axios.get("ttp://localhost:9000/api/todos")
-    .then((res) => {
-      this.setState({todos: res.data });
-    })
-    .catch((err) => {
-      console.error('Error fetching todos', err)
-    })
-  }
+   FetchAllTodos = () => {
+        axios.get(URL)
+            .then(res => {
+               this.setState({ ...this.state, todos: res.data.data })
+               
+            })
+            .catch(err => {
+      
+               this.setState({ ...this.state, error: err.message})
+            })
+   }
 
-  componentDidUpdate(prevProps, prevState){
-    /// check if the length of todos list has changed
-if(prevState.todos.length !== this.state.todos.length){
-  console.log('Todos list updated', this.state.todos)
-}
-  }
-  addNewTodos = (addName) => {
-    const newTask = {
-      name: addName,
-      completed: false
-    };
+   componentDidMount(){
+    this.FetchAllTodos();
+   }
 
-  axios
-  .post('http://localhost:9000/api/todos', newTask)
-  .then((res) => {
-    console.log('New todo created:', res.data);
-    this.setState({ todos: [...this.state.todos, res.data] });
-  })
-  .catch((err) => console.log('Error adding todo', err.message));
+   inputChange = (e) => {
+      const { value } = e.target;
+      this.setState({ ...this.state, toDoNameInput: value })
+   }
 
-};
-  render() {
+  render(){
+    return(
+    <div>
+     <div>
+        <h3>Error: {this.state.error}</h3>
+        <input type="text" 
+        value={this.state.toDoNameInput} 
+        onChange={this.inputChange}/>
+        <button >Submit</button>
+       <h2>Todos: </h2>
+       {this.state.todos.map(td => {
+        return<div key={td.id}> {td.name}</div>
+       })}
+     </div>
     
-    return (
-      <div>
-        <Form addNewTodos={this.addNewTodos} />
-        <TodoList todos={this.state.todos} />
-       
-      </div>
-    );
+    </div>
+    )
   }
 }
